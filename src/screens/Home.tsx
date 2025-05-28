@@ -5,10 +5,14 @@ import Button from "@mui/material/Button";
 
 import SideMenu from "./SideMenu";
 import CustomBoardScreen from "./CustomBoardScreen";
+import SignUsers from "./SignUser";
+import SignClass from "./SignClass";
 
 import UserScreens from "./UserScreens";
 import ClassScreens from "./ClassScreens";
 import { Box } from "@mui/material";
+
+
 const Home = () => {
     return (
         <Router>
@@ -21,7 +25,9 @@ const Home = () => {
                         <Route path="/users" element={<UserScreens />} />
                         <Route path="/classes" element={<ClassScreens />} />
                         <Route path="/custom-board" element={<CustomBoardScreen />} />
-                        
+                        <Route path="/sign-users" element={<SignUsers />} />
+                        <Route path="/sign-class" element={<SignClass />} />
+
                     </Routes>
                 </Box>
             </Box>

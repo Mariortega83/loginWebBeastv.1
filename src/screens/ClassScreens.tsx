@@ -1,49 +1,207 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Importamos React Router
-import { Button, Typography, Stack } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Button, Stack, Typography, IconButton } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_URL } from '../context/AuthContext';
+import InputBar from '../components/InputBar';
 
-import  InputBar  from '../components/InputBar'; // Asegúrate de que la ruta sea correcta
+interface Class {
+    id: number;
+    name: string;
+    description?: string;
+    instructor: string;
+    duration: number; 
+    capacity: number;
+    schedule: string;
+    gymId?: number;
+}
 
+const ClassScreens = () => {
+    const [classes, setClasses] = useState<Class[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${API_URL}/api/classes`);
+                setClasses(response.data);
+                setError(null);
+            } catch (error) {
+                console.error('Error fetching classes:', error);
+                setError('Error al cargar las clases');
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchClasses();
+    }, []);
 
-const ClassScreens : React.FC = () => {
-  // Datos de ejemplo
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com' },
-    { id: 3, name: 'Alice Johnson', email: 'alice.johnson@example.com' },
-  ];
+    const handleDeleteClass = async (classId: number) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
+            try {
+                await axios.delete(`${API_URL}/api/classes/${classId}`);
+                setClasses(classes.filter(cls => cls.id !== classId));
+                alert('Clase eliminada correctamente');
+            } catch (error) {
+                console.error('Error deleting class:', error);
+                alert('Error al eliminar la clase');
+            }
+        }
+    };
 
-  return (
-    <Stack direction="column" justifyContent="space-between" alignItems="center" sx={{ padding: 2 }}>
-    <Typography variant="h4" sx={{ flexGrow: 1 }}>
-      Clases
-    </Typography>
-    <InputBar />
-    {/* Tabla de usuarios */}
-    <TableContainer component={Paper} sx={{ marginTop: 2, maxWidth: '80%', marginLeft: 'auto', marginRight: 'auto' }}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        {/* Cabecera de la tabla */}
-        <TableHead>
-          <TableRow>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Email</TableCell>
-          </TableRow>
-        </TableHead>
-        {/* Cuerpo de la tabla */}
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    </Stack>
-  );
+    const handleEditClass = (classId: number) => {
+        navigate(`/edit-class/${classId}`);
+    };
+
+    const handleAddClass = () => {
+        navigate('/sign-class');
+    };
+
+    if (loading) {
+        return (
+            <Stack direction="column" justifyContent="center" alignItems="center" sx={{ padding: 2, height: '50vh' }}>
+                <Typography variant="h6">Cargando clases...</Typography>
+            </Stack>
+        );
+    }
+
+    return (
+        <Stack direction="column" justifyContent="flex-start" alignItems="center" sx={{ padding: 2 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ width: '100%', maxWidth: '90%', mb: 2 }}>
+                <Typography variant="h4" sx={{ color: '#fff' }}>
+                    Clases
+                </Typography>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleAddClass}
+                    sx={{
+                        backgroundColor: '#FF4C4C',
+                        '&:hover': {
+                            backgroundColor: '#e03b3b',
+                        },
+                    }}
+                >
+                    Nueva Clase
+                </Button>
+            </Stack>
+
+            <InputBar />
+
+            {error && (
+                <Typography variant="body2" color="error" sx={{ mt: 1, mb: 1 }}>
+                    {error}
+                </Typography>
+            )}
+
+            <TableContainer 
+                component={Paper} 
+                sx={{ 
+                    marginTop: 2, 
+                    maxWidth: '95%', 
+                    maxHeight: '60vh', // Altura máxima para activar scroll
+                    marginLeft: 'auto', 
+                    marginRight: 'auto',
+                    backgroundColor: '#f5f5f5',
+                    overflowY: 'auto', // Scroll vertical
+                    overflowX: 'auto', // Scroll horizontal si es necesario
+                    '&::-webkit-scrollbar': {
+                        width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        backgroundColor: '#f1f1f1',
+                        borderRadius: '10px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#888',
+                        borderRadius: '10px',
+                        '&:hover': {
+                            backgroundColor: '#555',
+                        },
+                    },
+                }}
+            >
+                <Table sx={{ minWidth: 700 }} aria-label="classes table" stickyHeader>
+                    <TableHead>
+                        <TableRow sx={{ backgroundColor: '#e0e0e0' }}>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>ID</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Nombre</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Instructor</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Duración</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Capacidad</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Horario</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Descripción</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', backgroundColor: '#e0e0e0' }}>Acciones</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {classes.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={8} sx={{ textAlign: 'center', py: 3 }}>
+                                    No hay clases disponibles
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            classes.map((classItem) => (
+                                <TableRow key={classItem.id} hover>
+                                    <TableCell>{classItem.id}</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                                        {classItem.name}
+                                    </TableCell>
+                                    <TableCell>{classItem.instructor}</TableCell>
+                                    <TableCell>{classItem.duration} min</TableCell>
+                                    <TableCell>
+                                        <span 
+                                            style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.8rem',
+                                                backgroundColor: classItem.capacity > 20 ? '#4caf50' : 
+                                                               classItem.capacity > 10 ? '#ff9800' : '#f44336',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            {classItem.capacity}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell sx={{ fontSize: '0.9rem' }}>
+                                        {classItem.schedule}
+                                    </TableCell>
+                                    <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {classItem.description || 'N/A'}
+                                    </TableCell>
+                                    <TableCell sx={{ textAlign: 'center' }}>
+                                        <IconButton
+                                            onClick={() => handleEditClass(classItem.id)}
+                                            sx={{ color: '#1976d2', mr: 1 }}
+                                            title="Editar clase"
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            onClick={() => handleDeleteClass(classItem.id)}
+                                            sx={{ color: '#d32f2f' }}
+                                            title="Eliminar clase"
+                                        >
+                                            <DeleteOutlineIcon />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Stack>
+    );
 };
+
 export default ClassScreens;

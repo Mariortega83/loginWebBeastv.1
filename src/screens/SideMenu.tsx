@@ -31,6 +31,7 @@ const SideMenu = () => {
                 <SideMenuBt content="Users" act="/users" />
                 <SideMenuBt content="Clases" act="/classes" />
                 <SideMenuBt content="Plan" act="/custom-board" />
+                <SideMenuBt content="Dar de alta" act="/sign-users" />
             </Stack >
 
             <Button onClick={onLogout}>Sign out</Button>
