@@ -10,12 +10,12 @@ import { API_URL } from '../context/AuthContext';
 import InputBar from '../components/InputBar';
 
 interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     phone?: string;
     role: string;
-    gymId?: number;
+    gymId?: string;
 }
 
 const UserScreens = () => {
@@ -36,12 +36,7 @@ const UserScreens = () => {
                 console.error('Error fetching users:', error);
                 setError('Error al cargar los usuarios');
                 
-                // Datos de ejemplo en caso de error
-                setUsers([
-                    { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'USER', phone: '123456789' },
-                    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'ADMIN', phone: '987654321' },
-                    { id: 3, name: 'Alice Johnson', email: 'alice.johnson@example.com', role: 'TRAINER', phone: '555666777' },
-                ]);
+                
             } finally {
                 setLoading(false);
             }
@@ -50,7 +45,7 @@ const UserScreens = () => {
         fetchUsers();
     }, []);
 
-    const handleDeleteUser = async (userId: number) => {
+    const handleDeleteUser = async (userId: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
             try {
                 await axios.delete(`${API_URL}/api/users/${userId}`);
@@ -63,7 +58,7 @@ const UserScreens = () => {
         }
     };
 
-    const handleEditUser = (userId: number) => {
+    const handleEditUser = (userId: string) => {
         navigate(`/edit-user/${userId}`);
     };
 
