@@ -1,69 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import './Login.css'; // Asumiendo que tienes un archivo CSS para los estilos
-import axios from 'axios';
-import { useAuth, API_URL } from '../../context/AuthContext';
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Paper,
+  Avatar,
+} from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { useAuth } from '../../context/AuthContext';
 
 export const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const { onLogin } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { onLogin } = useAuth();
 
-    // useEffect(() => {
-    //     const testCall = async () => {
-    //         const result = await axios.post(`${API_URL}/api/auth/login`);
-    //     }
-    //     testCall();
-    // }, []);
+  const login = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const result = await onLogin!(email, password);
+      if (!result) {
+        alert('No psoe');
+      } else {
+        console.log('Login successful:', result);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('An unexpected error occurred during login.');
+      }
+    }
+  };
 
+  return (
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        {/* Imagen decorativa */}
+        <Box
+          component="img"
+          src="/logowb.png"
+          alt="Login Logo"
+          sx={{
+            width: '100%',
+            maxHeight: 180,
+            objectFit: 'cover',
+            borderRadius: 2,
+            marginBottom: 2,
+          }}
+        />
 
-    const login = async (event: React.FormEvent) => {
-        event.preventDefault();
-        try {
-            const result = await onLogin!(email, password);
-            console.log('Login result:', result);
-            if (!result) {
-                alert('No psoe');
-            } else {
-                console.log('Login successful:', result);
-            }
+        
+        <Avatar sx={{ m: 1, bgcolor: 'orange' }}>
+          <LockOutlinedIcon />
+        </Avatar>
 
-        } catch (error) {
-            if (error instanceof Error) {
-                alert('Error' + error.message);
-            } else {
-                alert('An unexpected error occurred during login.');
-            }
-            console.log(error);
+        <Typography component="h1" variant="h5">
+          Iniciar sesión
+        </Typography>
 
-        };
+        <Box component="form" onSubmit={login} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Correo electrónico"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            sx={{ backgroundColor: 'white' }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Contraseña"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            sx={{ backgroundColor: 'white' }}
+          />
 
-
-    };
-    return (
-        <div className="form-container">
-            <form className="login-form" onSubmit={login}>
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)}
-                    type="text"
-                    placeholder="Email"
-                    className="form-input"
-                    id="email"
-                />
-
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
-                    type="password"
-                    placeholder="Password"
-                    className="form-input"
-                    id="password"
-                />
-
-                <button type="submit" className="form-button">Login</button>
-            </form>
-        </div>
-    );
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2, backgroundColor: 'orange', '&:hover': { backgroundColor: 'darkorange' } }}
+          >
+            Iniciar sesión
+          </Button>
+        </Box>
+      </Box>
+    </Container>
+  );
 };
 
 export default Login;

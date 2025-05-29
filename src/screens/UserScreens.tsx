@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_URL } from '../context/AuthContext';
-import InputBar from '../components/InputBar';
+
 
 interface User {
     id: string;
@@ -93,9 +93,6 @@ const UserScreens = () => {
                     Nuevo Usuario
                 </Button>
             </Stack>
-
-            <InputBar />
-
             {error && (
                 <Typography variant="body2" color="error" sx={{ mt: 1, mb: 1 }}>
                     {error}
