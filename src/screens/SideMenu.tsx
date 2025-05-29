@@ -30,7 +30,6 @@ const SideMenu = () => {
             <Stack direction={"column"} gap={2} justifyContent={"flex-start"} alignItems="flex-start" >
                 <SideMenuBt content="Users" act="/users" />
                 <SideMenuBt content="Clases" act="/classes" />
-                <SideMenuBt content="Plan" act="/custom-board" />
                 <SideMenuBt content="Dar de alta" act="/sign-users" />
             </Stack >
 

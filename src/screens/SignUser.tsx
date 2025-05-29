@@ -27,12 +27,6 @@ const SignUser = () => {
                 setGyms(response.data);
             } catch (error) {
                 console.error('Error fetching gyms:', error);
-                // Datos de ejemplo en caso de error
-                setGyms([
-                    { id: 1, name: 'Beast Mode Gym - Centro' },
-                    { id: 2, name: 'Beast Mode Gym - Norte' },
-                    { id: 3, name: 'Beast Mode Gym - Sur' }
-                ]);
             }
         };
         fetchGyms();
@@ -176,7 +170,7 @@ const SignUser = () => {
                             }}
                         />
 
-                        {/* Desplegable para seleccionar gimnasio */}
+                        
                         <FormControl fullWidth required>
                             <InputLabel
                                 id="gym-select-label"
@@ -209,7 +203,6 @@ const SignUser = () => {
                             </Select>
                         </FormControl>
 
-                        {/* Desplegable para seleccionar rol */}
                         <FormControl fullWidth required>
                             <InputLabel
                                 id="role-select-label"

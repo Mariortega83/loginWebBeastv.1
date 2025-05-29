@@ -24,7 +24,6 @@ const UserScreens = () => {
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    // Cargar usuarios al montar el componente
     useEffect(() => {
         const fetchUsers = async () => {
             try {

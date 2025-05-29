@@ -107,12 +107,12 @@ const ClassScreens = () => {
                 sx={{ 
                     marginTop: 2, 
                     maxWidth: '95%', 
-                    maxHeight: '60vh', // Altura máxima para activar scroll
+                    maxHeight: '60vh', 
                     marginLeft: 'auto', 
                     marginRight: 'auto',
                     backgroundColor: '#f5f5f5',
-                    overflowY: 'auto', // Scroll vertical
-                    overflowX: 'auto', // Scroll horizontal si es necesario
+                    overflowY: 'auto', 
+                    overflowX: 'auto', 
                     '&::-webkit-scrollbar': {
                         width: '8px',
                     },

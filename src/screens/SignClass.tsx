@@ -217,7 +217,6 @@ const SignClass = () => {
                             }}
                         />
 
-                        {/* Desplegable para seleccionar gimnasio */}
                         <FormControl fullWidth required>
                             <InputLabel
                                 id="gym-select-label"
