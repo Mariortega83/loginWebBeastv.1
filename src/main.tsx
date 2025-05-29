@@ -5,7 +5,7 @@ import Home from '../src/screens/Home'
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import '../src/assets/css/index.css'
 
-const App = () => {
+const AppContent = () => {
   const { authState } = useAuth();
 
   return (
@@ -14,11 +14,17 @@ const App = () => {
     </div>
   );
 }
-createRoot(document.getElementById('root')!).render(
 
-  <StrictMode>
+const App = () => {
+  return (
     <AuthProvider>
-      <App />
+      <AppContent />
     </AuthProvider>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
   </StrictMode>
 )

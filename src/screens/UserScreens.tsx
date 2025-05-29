@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Stack, Typography, IconButton } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -6,7 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { API_URL } from '../context/AuthContext';
+import { API_URL, useAuth } from '../context/AuthContext';
 
 
 interface User {
@@ -23,6 +23,23 @@ const UserScreens = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { authState } = useAuth();
+
+    // Obtener el ID del usuario actual
+    const getCurrentUserId = (): string | null => {
+        const token = authState?.token;
+        if (!token) return null;
+        
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.id;
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            return null;
+        }
+    };
+
+    const currentUserId = getCurrentUserId();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -41,14 +58,41 @@ const UserScreens = () => {
             }
         };
 
-        fetchUsers();
-    }, []);
+        fetchUsers();    }, []);    const handleDeleteUser = async (userId: string) => {
+        // Verificar que el admin no se borre a sí mismo
+        const token = authState?.token;
+        
+        if (!token) {
+            alert('No se encontró el token de autenticación. Por favor, inicia sesión nuevamente.');
+            return;
+        }
 
-    // ...existing code...
-    const handleDeleteUser = async (userId: string) => {
+        // Decodificar el token para obtener el ID del usuario actual
+        let currentUserId: string | null = null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            currentUserId = payload.id;
+        } catch (error) {
+            console.error('Error decoding token:', error);
+            alert('Error al verificar la identidad del usuario. Por favor, inicia sesión nuevamente.');
+            return;
+        }
+
+        // Verificar si el usuario intenta borrarse a sí mismo
+        if (currentUserId && userId === currentUserId) {
+            alert('No puedes eliminar tu propia cuenta de administrador. Solicita a otro administrador que realice esta acción.');
+            return;
+        }
+
         if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
             try {
-                await axios.delete(`${API_URL}/api/users/${userId}`);
+                // Realizar la petición DELETE con el token JWT del admin
+                await axios.delete(`${API_URL}/api/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
                 // Actualizar los usuarios después de la eliminación
                 setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
@@ -65,8 +109,11 @@ const UserScreens = () => {
                         case 400:
                             alert(`Error: ${message || 'Solicitud inválida'}`);
                             break;
+                        case 401:
+                            alert('Token de autenticación inválido o expirado. Por favor, inicia sesión nuevamente.');
+                            break;
                         case 403:
-                            alert('No tienes permisos para eliminar este usuario');
+                            alert('No tienes permisos de administrador para eliminar este usuario');
                             break;
                         case 404:
                             alert('Usuario no encontrado');
@@ -86,7 +133,7 @@ const UserScreens = () => {
             }
         }
     };
-    // ...existing code...
+    
     const handleEditUser = (userId: string) => {
         navigate(`/edit-user/${userId}`);
     };
@@ -174,11 +221,25 @@ const UserScreens = () => {
                                     No hay usuarios disponibles
                                 </TableCell>
                             </TableRow>
-                        ) : (
-                            users.map((user) => (
+                        ) : (                            users.map((user) => (
                                 <TableRow key={user.id} hover>
                                     <TableCell>{user.id}</TableCell>
-                                    <TableCell>{user.name}</TableCell>
+                                    <TableCell>
+                                        {user.name}
+                                        {user.id === currentUserId && (
+                                            <span style={{
+                                                marginLeft: '8px',
+                                                padding: '2px 6px',
+                                                backgroundColor: '#2196f3',
+                                                color: 'white',
+                                                fontSize: '0.7rem',
+                                                borderRadius: '10px',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                TÚ
+                                            </span>
+                                        )}
+                                    </TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{user.phone || 'N/A'}</TableCell>
                                     <TableCell>
@@ -205,8 +266,15 @@ const UserScreens = () => {
                                         </IconButton>
                                         <IconButton
                                             onClick={() => handleDeleteUser(user.id)}
-                                            sx={{ color: '#d32f2f' }}
-                                            title="Eliminar usuario"
+                                            disabled={user.id === currentUserId}
+                                            sx={{ 
+                                                color: user.id === currentUserId ? '#bbb' : '#d32f2f',
+                                                cursor: user.id === currentUserId ? 'not-allowed' : 'pointer'
+                                            }}
+                                            title={user.id === currentUserId ? 
+                                                "No puedes eliminar tu propia cuenta" : 
+                                                "Eliminar usuario"
+                                            }
                                         >
                                             <DeleteOutlineIcon />
                                         </IconButton>

@@ -11,7 +11,7 @@ interface AuthProps {
 
 const TOKEN_KEY = 'userToken';
 
-export const API_URL = 'http://192.168.1.33:3000'
+export const API_URL = 'http://192.168.1.151:3000'
 
 const AuthContext = createContext<AuthProps>({});
 
@@ -39,20 +39,26 @@ export const AuthProvider = ({ children }: any) => {
         token: null,
         authenticated: null,
         isAdmin: null
-    });
-
-    useEffect(() => {
+    });    useEffect(() => {
         const token = Cookies.get(TOKEN_KEY);
         console.log('Loaded token:', token);
-
+        
         if (token) {
             const decodedToken = decodeToken(token);
             const isAdmin = decodedToken?.role !== 'USER';
-
+            
+            // Guardar gymId en localStorage si existe en el token
+            if (decodedToken?.gymId) {
+                localStorage.setItem('gymId', decodedToken.gymId);
+                console.log('gymId guardado en localStorage al cargar:', decodedToken.gymId);
+            }
+            
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setAuthState({ token, authenticated: true, isAdmin });
             console.log('User authenticated with token: true, isAdmin:', isAdmin);
         } else {
+            // Limpiar gymId del localStorage si no hay token
+            localStorage.removeItem('gymId');
             axios.defaults.headers.common['Authorization'] = '';
             setAuthState({ token: null, authenticated: false, isAdmin: null });
             console.log('User authenticated with token: false');
@@ -62,11 +68,9 @@ export const AuthProvider = ({ children }: any) => {
     const login = async (email: string, password: string) => {
         try {
             const result = await axios.post(`${API_URL}/api/auth/login`, { email, password });
-            console.log('Login result:', result);
-
-            if (result && result.data && result.data.token) {
+            console.log('Login result:', result);            if (result && result.data && result.data.token) {
                 const { token } = result.data;
-
+                
                 // Decodificar el token para obtener el rol
                 const decodedToken = decodeToken(token);
                 const isAdmin = decodedToken?.role !== 'USER';
@@ -85,6 +89,12 @@ export const AuthProvider = ({ children }: any) => {
                     setAuthState({ token, authenticated: true, isAdmin });
                     console.log('Autenticado - Role:', decodedToken?.role, 'isAdmin:', isAdmin);
 
+                    // Guardar gymId en localStorage si existe en el token
+                    if (decodedToken?.gymId) {
+                        localStorage.setItem('gymId', decodedToken.gymId);
+                        console.log('gymId guardado en localStorage:', decodedToken.gymId);
+                    }
+
                     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
                     return { error: false, msg: 'Login successful', data: result.data };
@@ -99,12 +109,12 @@ export const AuthProvider = ({ children }: any) => {
             if (error && typeof error === 'object' && 'message' in error) {
                 errorMsg = (error as { message?: string }).message || errorMsg;
             }
-            return { error: true, msg: errorMsg, data: null };
-        }
+            return { error: true, msg: errorMsg, data: null };        }
     };
 
     const logout = async () => {
         await Cookies.remove(TOKEN_KEY);
+        localStorage.removeItem('gymId'); // Limpiar gymId del localStorage
         setAuthState({ token: null, authenticated: false, isAdmin: null });
         axios.defaults.headers.common['Authorization'] = '';
     };
