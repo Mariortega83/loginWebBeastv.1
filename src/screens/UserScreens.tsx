@@ -34,8 +34,8 @@ const UserScreens = () => {
             } catch (error) {
                 console.error('Error fetching users:', error);
                 setError('Error al cargar los usuarios');
-                
-                
+
+
             } finally {
                 setLoading(false);
             }
@@ -44,19 +44,49 @@ const UserScreens = () => {
         fetchUsers();
     }, []);
 
+    // ...existing code...
     const handleDeleteUser = async (userId: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
             try {
                 await axios.delete(`${API_URL}/api/users/${userId}`);
-                setUsers(users.filter(user => user.id !== userId));
+
+                // Actualizar los usuarios después de la eliminación
+                setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+
                 alert('Usuario eliminado correctamente');
             } catch (error) {
                 console.error('Error deleting user:', error);
-                alert('Error al eliminar el usuario');
+
+                if (axios.isAxiosError(error)) {
+                    const status = error.response?.status;
+                    const message = error.response?.data?.message || '';
+
+                    switch (status) {
+                        case 400:
+                            alert(`Error: ${message || 'Solicitud inválida'}`);
+                            break;
+                        case 403:
+                            alert('No tienes permisos para eliminar este usuario');
+                            break;
+                        case 404:
+                            alert('Usuario no encontrado');
+                            break;
+                        case 409:
+                            alert('No se puede eliminar el usuario debido a dependencias existentes');
+                            break;
+                        case 500:
+                            alert('Error del servidor. Inténtalo más tarde.');
+                            break;
+                        default:
+                            alert(`Error ${status}: ${message || 'Error desconocido'}`);
+                    }
+                } else {
+                    alert('Error de conexión. Verifica tu conexión a internet.');
+                }
             }
         }
     };
-
+    // ...existing code...
     const handleEditUser = (userId: string) => {
         navigate(`/edit-user/${userId}`);
     };
@@ -99,13 +129,13 @@ const UserScreens = () => {
                 </Typography>
             )}
 
-            <TableContainer 
-                component={Paper} 
-                sx={{ 
-                    marginTop: 2, 
-                    maxWidth: '90%', 
+            <TableContainer
+                component={Paper}
+                sx={{
+                    marginTop: 2,
+                    maxWidth: '90%',
                     maxHeight: '60vh', // Altura máxima para activar scroll
-                    marginLeft: 'auto', 
+                    marginLeft: 'auto',
                     marginRight: 'auto',
                     backgroundColor: '#f5f5f5',
                     overflowY: 'auto', // Scroll vertical
@@ -152,13 +182,13 @@ const UserScreens = () => {
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{user.phone || 'N/A'}</TableCell>
                                     <TableCell>
-                                        <span 
+                                        <span
                                             style={{
                                                 padding: '4px 8px',
                                                 borderRadius: '12px',
                                                 fontSize: '0.8rem',
-                                                backgroundColor: user.role === 'ADMIN' ? '#ff9800' : 
-                                                               user.role === 'TRAINER' ? '#4caf50' : '#2196f3',
+                                                backgroundColor: user.role === 'ADMIN' ? '#ff9800' :
+                                                    user.role === 'TRAINER' ? '#4caf50' : '#2196f3',
                                                 color: 'white'
                                             }}
                                         >

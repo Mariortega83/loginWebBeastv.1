@@ -5,17 +5,17 @@ import axios from 'axios';
 import { API_URL } from '../context/AuthContext';
 
 interface Gym {
-    id: string; // Cambiar a string
+    id: string; 
     name: string;
 }
 
 interface User {
-    id: string; // Cambiar a string
+    id: string; 
     name: string;
     email: string;
     phone?: string;
     role: string;
-    gymId?: string; // Cambiar a string
+    gymId?: string; 
 }
 
 const EditUser = () => {
