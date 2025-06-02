@@ -10,41 +10,59 @@ import { API_URL } from '../context/AuthContext';
 
 
 interface Class {
-    id: number;
+    id: string;
     name: string;
     description?: string;
     instructor: string;
-    duration: number; 
-    capacity: number;
+    startTime: string;
+    endTime: string;
+    maxUsers: number;
     schedule: string;
-    gymId?: number;
+    gymId?: string;
+}
+
+interface Gym {
+    id: string;
+    name: string;
 }
 
 const ClassScreens = () => {
     const [classes, setClasses] = useState<Class[]>([]);
+    const [gyms, setGyms] = useState<Gym[]>([])
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchClasses = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${API_URL}/api/classes`);
-                setClasses(response.data);
+                const [classesRes, gymsRes] = await Promise.all([
+                    axios.get(`${API_URL}/api/classes`),
+                    axios.get(`${API_URL}/api/gyms`)
+                ]);
+                setClasses(classesRes.data);
+                setGyms(gymsRes.data);
                 setError(null);
             } catch (error) {
-                console.error('Error fetching classes:', error);
-                setError('Error al cargar las clases');
+                console.error('Error fetching data:', error);
+                setError('Error al cargar las clases o gimnasios');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchClasses();
+        fetchData();
     }, []);
 
-    const handleDeleteClass = async (classId: number) => {
+    const getGymName = (gymId?: string) => {
+    if (!gymId) return 'N/o';
+    const gym = gyms.find(g => String(g.id) === String(gymId));
+    return gym ? gym.name : 'N/A';
+};
+
+
+    const handleDeleteClass = async (classId: string) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
             try {
                 await axios.delete(`${API_URL}/api/classes/${classId}`);
@@ -57,7 +75,7 @@ const ClassScreens = () => {
         }
     };
 
-    const handleEditClass = (classId: number) => {
+    const handleEditClass = (classId: string) => {
         navigate(`/edit-class/${classId}`);
     };
 
@@ -94,7 +112,7 @@ const ClassScreens = () => {
                 </Button>
             </Stack>
 
-            
+
 
             {error && (
                 <Typography variant="body2" color="error" sx={{ mt: 1, mb: 1 }}>
@@ -102,17 +120,17 @@ const ClassScreens = () => {
                 </Typography>
             )}
 
-            <TableContainer 
-                component={Paper} 
-                sx={{ 
-                    marginTop: 2, 
-                    maxWidth: '95%', 
-                    maxHeight: '60vh', 
-                    marginLeft: 'auto', 
+            <TableContainer
+                component={Paper}
+                sx={{
+                    marginTop: 2,
+                    maxWidth: '95%',
+                    maxHeight: '60vh',
+                    marginLeft: 'auto',
                     marginRight: 'auto',
                     backgroundColor: '#f5f5f5',
-                    overflowY: 'auto', 
-                    overflowX: 'auto', 
+                    overflowY: 'auto',
+                    overflowX: 'auto',
                     '&::-webkit-scrollbar': {
                         width: '8px',
                     },
@@ -134,10 +152,9 @@ const ClassScreens = () => {
                         <TableRow sx={{ backgroundColor: '#e0e0e0' }}>
                             <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>ID</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Nombre</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Instructor</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Duración</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Capacidad</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Horario</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Capacidad</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Gimnasio</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#e0e0e0' }}>Descripción</TableCell>
                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', backgroundColor: '#e0e0e0' }}>Acciones</TableCell>
                         </TableRow>
@@ -156,24 +173,26 @@ const ClassScreens = () => {
                                     <TableCell sx={{ fontWeight: 'bold', color: '#1976d2' }}>
                                         {classItem.name}
                                     </TableCell>
-                                    <TableCell>{classItem.instructor}</TableCell>
-                                    <TableCell>{classItem.duration} min</TableCell>
+                                    <TableCell>  {new Date(classItem.startTime).toLocaleDateString('es-ES', { weekday: 'long' })},{" "}
+                                        {new Date(classItem.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{" "}
+                                        {new Date(classItem.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </TableCell>
                                     <TableCell>
-                                        <span 
+                                        <span
                                             style={{
                                                 padding: '4px 8px',
                                                 borderRadius: '12px',
                                                 fontSize: '0.8rem',
-                                                backgroundColor: classItem.capacity > 20 ? '#4caf50' : 
-                                                               classItem.capacity > 10 ? '#ff9800' : '#f44336',
+                                                backgroundColor: classItem.maxUsers > 20 ? '#4caf50' :
+                                                    classItem.maxUsers > 10 ? '#ff9800' : '#f44336',
                                                 color: 'white'
                                             }}
                                         >
-                                            {classItem.capacity}
+                                            {classItem.maxUsers}
                                         </span>
                                     </TableCell>
-                                    <TableCell sx={{ fontSize: '0.9rem' }}>
-                                        {classItem.schedule}
+                                    <TableCell>
+                                        {getGymName(classItem.gymId)}
                                     </TableCell>
                                     <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {classItem.description || 'N/A'}

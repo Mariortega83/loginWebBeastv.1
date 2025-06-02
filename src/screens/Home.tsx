@@ -12,6 +12,7 @@ import UserScreens from "./UserScreens";
 import ClassScreens from "./ClassScreens";
 import { Box } from "@mui/material";
 import EditUser from "../components/EditUser";
+import EditClassScreen from "../components/EditClass"; // Asegúrate de que esta ruta sea correcta
 
 
 const Home = () => {
@@ -28,8 +29,7 @@ const Home = () => {
                         <Route path="/sign-users" element={<SignUsers />} />
                         <Route path="/sign-class" element={<SignClass />} />
                         <Route path="/edit-user/:userId" element={<EditUser />} />
-
-
+                        <Route path="/edit-class/:classId" element={<EditClassScreen />} />
                     </Routes>
                 </Box>
             </Box>

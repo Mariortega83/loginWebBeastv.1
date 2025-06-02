@@ -67,7 +67,7 @@ const UserScreens = () => {
             return;
         }
 
-        // Decodificar el token para obtener el ID del usuario actual
+        
         let currentUserId: string | null = null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
